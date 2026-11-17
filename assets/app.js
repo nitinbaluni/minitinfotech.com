@@ -1,5 +1,5 @@
 (function(){
-var EMAIL="info@minitinfotech.com";
+var EMAIL="minitinfotech@gmail.com";
 var t=document.querySelector(".mb"),m=document.getElementById("menu");
 if(t)t.addEventListener("click",function(){var o=m.classList.toggle("open");t.setAttribute("aria-expanded",o)});
 var y=document.getElementById("yr");if(y)y.textContent=new Date().getFullYear();

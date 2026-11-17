@@ -1,5 +1,5 @@
 # Generates the static pages. Edit CONTACT values, then run: python3 build.py
-PHONE="+91 00000 00000"; TEL="+910000000000"; WA="910000000000"; EMAIL="info@minitinfotech.com"
+PHONE="+91 93154 52775"; TEL="+919315452775"; WA="919315452775"; EMAIL="minitinfotech@gmail.com"
 NAV=[("index.html","Home"),("about.html","About Us"),("products.html","Products"),("brand-partners.html","Brand Partners"),("b2b-supply.html","B2B Supply"),("contact.html","Contact Us")]
 I={"phone":'<path d="M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2"/>',
 "plug":'<path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0zM12 17v5"/>',
