@@ -83,5 +83,35 @@ form{grid-template-columns:1fr}footer .grid{grid-template-columns:1fr 1fr}
 .brands{display:grid;gap:16px;grid-template-columns:repeat(4,1fr)}
 .brand{background:#fff;border:1px solid var(--bd);border-radius:var(--r);min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:16px}
 .brand b{font:700 17px var(--h);color:var(--in)}.brand small{color:var(--tx2);font-size:13px}
-.hero{background:var(--in)}
+/* .hero{background:var(--in);} */
+/* .hero{background:url(banner-v1.png);} */
+/* .hero{background: url(banner-v1.png);
+    background-position: right center;    
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-color: #001122;} */
+/* .hero {
+    background-image: url("banner-v1.png");
+    background-position: right center;
+    background-size: 60% auto;
+    background-repeat: no-repeat;
+    background-color: #001122;
+}     */
+.hero {
+    background:
+        linear-gradient(
+            90deg,
+            #001122 0%,
+            #001122 38%,
+            rgba(0, 17, 34, 0.95) 52%,
+            rgba(0, 17, 34, 0.35) 75%,
+            rgba(0, 17, 34, 0) 100%
+        ),
+        url("banner-v1.webp");
+
+    background-position: right center;
+    background-size: 100% 100%, 60% auto;
+    background-repeat: no-repeat;
+    background-color: #001122;
+}
 @media(max-width:1000px){.brands{grid-template-columns:repeat(3,1fr)}}@media(max-width:640px){.brands{grid-template-columns:repeat(2,1fr)}}
