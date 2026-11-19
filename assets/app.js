@@ -1,26 +1,162 @@
-(function(){
-var EMAIL="minitinfotech@gmail.com";
-var t=document.querySelector(".mb"),m=document.getElementById("menu");
-if(t)t.addEventListener("click",function(){var o=m.classList.toggle("open");t.setAttribute("aria-expanded",o)});
-var y=document.getElementById("yr");if(y)y.textContent=new Date().getFullYear();
-var f=document.getElementById("qf");if(!f)return;
-var pre=new URLSearchParams(location.search).get("cat");if(pre&&f.cat)f.cat.value=pre;
-f.addEventListener("submit",function(e){
-e.preventDefault();if(f.website.value)return;
-var bad=0,first;
-f.querySelectorAll("[data-req],[name=phone]").forEach(function(el){
-var v=el.value.trim(),er=el.parentNode.querySelector(".err"),msg="";
-if(el.type==="checkbox"){if(!el.checked)msg="Please acknowledge the privacy notice."}
-else if(!v){if(el.name!=="phone")msg="This field is required."}
-else if(el.type==="email"&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v))msg="Enter a valid email address.";
-else if(el.name==="phone"&&v.replace(/\D/g,"").length<8)msg="Enter a valid phone number.";
-el.setAttribute("aria-invalid",!!msg);er.textContent=msg;
-if(msg){bad++;first=first||el}});
-if(bad){first.focus();return}
-var d=new FormData(f),b=[];
-["name","company","email","phone","country","cat","brand","qty","timing","msg"].forEach(function(k){b.push(k.toUpperCase()+": "+(d.get(k)||"-"))});
-var ok=document.getElementById("ok");ok.style.display="block";
-ok.textContent="Thank you. Your email app will open with your enquiry ready to send. If it does not, email us at "+EMAIL+" or message us on WhatsApp.";
-location.href="mailto:"+EMAIL+"?subject="+encodeURIComponent("Quote request: "+(d.get("cat")||"General"))+"&body="+encodeURIComponent(b.join("\n"));
-f.reset()});
-})();
+(function () {
+  "use strict";
+  
+  var SUPPORT_EMAIL = "minitinfotech@gmail.com";
+  var API_ENDPOINT = "https://minitinfotech-api.013-nitin.workers.dev/api/leads";
+
+  var toggle = document.querySelector(".mb");
+  var menu = document.getElementById("menu");
+
+  if (toggle && menu) {
+    toggle.addEventListener("click", function () {
+      var isOpen = menu.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", String(isOpen));
+    });
+  }
+
+  var year = document.getElementById("yr");
+  if (year) year.textContent = new Date().getFullYear();
+
+  var form = document.getElementById("qf");
+  if (!form) return;
+
+  var submitButton = form.querySelector('[type="submit"]');
+  var status = document.getElementById("ok");
+
+  function showStatus(message, isError) {
+    if (!status) return;
+    status.textContent = message;
+    status.style.display = "block";
+    status.setAttribute("role", isError ? "alert" : "status");
+    status.setAttribute("aria-live", "polite");
+    status.classList.toggle("error", Boolean(isError));
+  }
+
+  function clearErrors() {
+    form.querySelectorAll(".err").forEach(function (node) {
+      node.textContent = "";
+    });
+    form.querySelectorAll('[aria-invalid="true"]').forEach(function (node) {
+      node.removeAttribute("aria-invalid");
+    });
+  }
+
+  function setFieldError(field, message) {
+    field.setAttribute("aria-invalid", message ? "true" : "false");
+    var wrapper = field.closest(".f") || field.parentElement;
+    var error = wrapper ? wrapper.querySelector(".err") : null;
+    if (error) error.textContent = message;
+  }
+
+  function validate() {
+    clearErrors();
+    var firstInvalid = null;
+    var invalid = false;
+
+    form.querySelectorAll("[data-req]").forEach(function (field) {
+      var message = "";
+      if (field.type === "checkbox") {
+        if (!field.checked) message = "Please acknowledge the privacy notice.";
+      } else {
+        var value = field.value.trim();
+        if (!value) message = "This field is required.";
+        else if (field.type === "email" &&
+                 !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) {
+          message = "Enter a valid email address.";
+        }
+      }
+
+      if (message) {
+        setFieldError(field, message);
+        invalid = true;
+        if (!firstInvalid) firstInvalid = field;
+      }
+    });
+
+    var phone = form.elements.phone;
+    if (phone && phone.value.trim()) {
+      var digits = phone.value.replace(/\D/g, "");
+      if (digits.length < 8 || digits.length > 15) {
+        setFieldError(phone, "Enter a valid phone number.");
+        invalid = true;
+        if (!firstInvalid) firstInvalid = phone;
+      }
+    }
+
+    if (firstInvalid) firstInvalid.focus();
+    return !invalid;
+  }
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    if (status) {
+      status.style.display = "none";
+      status.textContent = "";
+    }
+
+    // Honeypot field: silently stop likely bot submissions.
+    var honeypot = form.elements.website;
+    if (honeypot && honeypot.value.trim()) return;
+
+    if (!validate()) return;
+
+    var formData = new FormData(form);
+    var payload = {
+      formType: "contact",
+      name: String(formData.get("name") || "").trim(),
+      company: String(formData.get("company") || "").trim(),
+      email: String(formData.get("email") || "").trim(),
+      phone: String(formData.get("phone") || "").trim(),
+      message: String(formData.get("msg") || "").trim(),
+      consent: formData.get("consent") === "on",
+      sourcePage: window.location.pathname
+    };
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.setAttribute("aria-busy", "true");
+      submitButton.dataset.originalText = submitButton.textContent;
+      submitButton.textContent = "Sending...";
+    }
+
+    try {
+      var response = await fetch(API_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      var result;
+      try {
+        result = await response.json();
+      } catch (_) {
+        result = {};
+      }
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "We couldn't submit your enquiry. Please try again."
+        );
+      }
+
+      showStatus(
+        "Thank you. Your enquiry has been submitted successfully. Our team will contact you soon.",
+        false
+      );
+      form.reset();
+    } catch (error) {
+      showStatus(
+        (error && error.message ? error.message : "Unable to submit your enquiry.") +
+          " You can also email " + SUPPORT_EMAIL + ".",
+        true
+      );
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.removeAttribute("aria-busy");
+        submitButton.textContent = submitButton.dataset.originalText || "Send Enquiry";
+      }
+    }
+  });
+}());
