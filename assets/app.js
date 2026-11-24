@@ -20,6 +20,19 @@
   var form = document.getElementById("qf");
   if (!form) return;
 
+  // Pre-select the product category when arriving from a product page, e.g. contact.html?category=iphones
+  var categoryMap = {
+    "mobile-phones": "Mobile Phones",
+    "iphones": "iPhones",
+    "accessories": "Accessories",
+    "smart-devices": "Smart Devices"
+  };
+  var requested = new URLSearchParams(window.location.search).get("category");
+  var categorySelect = form.elements.category;
+  if (categorySelect && requested && categoryMap[requested]) {
+    categorySelect.value = categoryMap[requested];
+  }
+
   var submitButton = form.querySelector('[type="submit"]');
   var status = document.getElementById("ok");
 
@@ -102,13 +115,28 @@
     if (!validate()) return;
 
     var formData = new FormData(form);
+    var field = function (key) {
+      return String(formData.get(key) || "").trim();
+    };
+
+    // The lead service receives name, company, email, phone and message.
+    // The extra business details are added to the message so nothing is lost.
+    var details = [
+      "Business type: " + field("businessType"),
+      "Product category: " + field("category"),
+      "Brand / model: " + (field("brandModel") || "-"),
+      "Required quantity: " + (field("quantity") || "-"),
+      "Delivery city / PIN code: " + field("delivery")
+    ].join("\n");
+    var requirement = field("msg");
+
     var payload = {
       formType: "contact",
-      name: String(formData.get("name") || "").trim(),
-      company: String(formData.get("company") || "").trim(),
-      email: String(formData.get("email") || "").trim(),
-      phone: String(formData.get("phone") || "").trim(),
-      message: String(formData.get("msg") || "").trim(),
+      name: field("name"),
+      company: field("company"),
+      email: field("email"),
+      phone: field("phone"),
+      message: details + (requirement ? "\n\nRequirement details:\n" + requirement : ""),
       consent: formData.get("consent") === "on",
       sourcePage: window.location.pathname
     };
@@ -141,21 +169,20 @@
       }
 
       showStatus(
-        "Thank you. Your enquiry has been submitted successfully. Our team will contact you soon.",
+        "Thank you for contacting Minit Infotech. Your business enquiry has been received. Our team will review your requirements and get in touch.",
         false
       );
       form.reset();
     } catch (error) {
       showStatus(
-        (error && error.message ? error.message : "Unable to submit your enquiry.") +
-          " You can also email " + SUPPORT_EMAIL + ".",
+        "We couldn't submit your enquiry. Please try again or contact us directly by phone, WhatsApp or email.",
         true
       );
     } finally {
       if (submitButton) {
         submitButton.disabled = false;
         submitButton.removeAttribute("aria-busy");
-        submitButton.textContent = submitButton.dataset.originalText || "Send Enquiry";
+        submitButton.textContent = submitButton.dataset.originalText || "Submit Business Enquiry";
       }
     }
   });

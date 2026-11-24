@@ -63,7 +63,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--in);outline:none;box-
 .ci{list-style:none;padding:0;display:grid;gap:16px}.ci a{font-weight:600;text-decoration:none;color:var(--in)}
 .ci small{display:block;color:var(--tx2)}
 footer{background:var(--in);color:#b9c8d3;padding:56px 0 24px;font-size:15px}
-footer .grid{grid-template-columns:1.4fr 1fr 1fr 1fr}
+footer .grid { grid-template-columns:1.5fr 1fr 1fr 1.2fr .9fr }
 footer h3{color:#fff;font-size:15px;margin-bottom:12px}footer ul{list-style:none;padding:0;display:grid;gap:8px}
 footer a{text-decoration:none}footer a:hover{color:var(--or)}
 .tile{background:#fff;border-radius:10px;padding:8px 12px;display:inline-block;margin-bottom:14px}.tile img{height:46px;width:auto}
@@ -104,7 +104,7 @@ footer a{text-decoration:none}footer a:hover{color:var(--or)}
         url("banner-v1.webp");
 
     background-position: right center;
-    background-size: 100% 100%, 60% auto;
+    background-size: 100% 100%, 67% auto;
     background-repeat: no-repeat;
     background-color: #001122;
 }
